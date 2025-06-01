@@ -1,4 +1,4 @@
-# 🔐 OIDC Token Generator for OpenShift API (Azure AD + Key Vault)
+## OIDC Token Generator for OpenShift API (Azure AD + Key Vault)
 
 This script requests a JWT access token from Azure Active Directory using the OAuth2 `client_credentials` flow, pulling the client secret securely from **Azure Key Vault**, and uses it to authenticate against the OpenShift API.
 
