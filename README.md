@@ -4,7 +4,7 @@ This script requests a JWT access token from Azure Active Directory using the OA
 
 ---
 
-## 🛠️ Dependencies
+## Dependencies
 
 Install:
 
