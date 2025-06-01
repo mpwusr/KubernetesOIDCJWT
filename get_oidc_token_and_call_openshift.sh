@@ -1,19 +1,26 @@
 #!/bin/bash
 
-# Required environment variables
+# Inputs
 TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-CLIENT_SECRET="your-client-secret"  # Or use device code flow
-RESOURCE="api://openshift-api"      # May vary depending on your setup
-SCOPE="openid profile email"        # Add your custom scopes if needed
+KEYVAULT_NAME="your-vault-name"
+SECRET_NAME="client-secret"  # Azure Key Vault secret name
+SCOPE="openid profile email"
 OPENSHIFT_API="https://api.openshift.example.com:6443"
-
-# Use MS OAuth 2.0 token endpoint
 TOKEN_URL="https://login.microsoftonline.com/$TENANT_ID/oauth2/v2.0/token"
 
-echo "Requesting JWT token from Azure AD..."
+# 🔐 Fetch client secret from Azure Key Vault
+echo "🔐 Fetching client secret from Azure Key Vault: $KEYVAULT_NAME"
+CLIENT_SECRET=$(az keyvault secret show --name "$SECRET_NAME" --vault-name "$KEYVAULT_NAME" --query "value" -o tsv)
 
-# Generate JWT via client_credentials grant
+if [[ -z "$CLIENT_SECRET" ]]; then
+  echo "Failed to retrieve client secret from Azure Key Vault"
+  exit 1
+fi
+
+echo "Requesting access token from Azure AD..."
+
+# Get JWT access token from AAD
 TOKEN_RESPONSE=$(curl -s -X POST "$TOKEN_URL" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "client_id=$CLIENT_ID" \
@@ -21,7 +28,6 @@ TOKEN_RESPONSE=$(curl -s -X POST "$TOKEN_URL" \
   -d "grant_type=client_credentials" \
   -d "scope=$SCOPE")
 
-# Extract token
 ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
 
 if [[ "$ACCESS_TOKEN" == "null" || -z "$ACCESS_TOKEN" ]]; then
@@ -30,10 +36,10 @@ if [[ "$ACCESS_TOKEN" == "null" || -z "$ACCESS_TOKEN" ]]; then
   exit 1
 fi
 
-echo "Access Token retrieved from Azure AD"
+echo "Access Token retrieved"
 
-# Call OpenShift API using this JWT
-echo "Calling OpenShift API with OIDC token..."
+# Call OpenShift API using JWT
+echo "Calling OpenShift API with JWT..."
 
 API_RESPONSE=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
   -H "Accept: application/json" \
