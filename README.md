@@ -1,15 +1,15 @@
-# OIDC Token Generator for OpenShift API (Azure AD Auth)
+# 🔐 OIDC Token Generator for OpenShift API (Azure AD + Key Vault)
 
-This script requests a JWT access token from Azure Active Directory using the OAuth2 `client_credentials` flow and uses it to authenticate with the OpenShift API (assuming OpenShift is configured with Azure AD via OpenID Connect).
+This script requests a JWT access token from Azure Active Directory using the OAuth2 `client_credentials` flow, pulling the client secret securely from **Azure Key Vault**, and uses it to authenticate against the OpenShift API.
 
 ---
 
-## Dependencies
+## 🛠️ Dependencies
 
-Ensure the following tools are installed on your system:
+Install:
 
-```
-brew install jq curl
+```bash
+brew install jq curl azure-cli
 ```
 ## Notes
 * Token TTL is short (usually 3600 seconds), but can be refreshed or re-issued as needed.
@@ -19,6 +19,12 @@ brew install jq curl
 ## Device code flow (for human login without client secret), or
 
 ## Authorization code flow (for full OAuth2 interactive flow)
+
+## Secret Setup
+Store your Azure AD app secret in Azure Key Vault:
+```
+az keyvault secret set --vault-name <your-vault-name> --name client-secret --value "<CLIENT_SECRET>"
+```
 
 ## Testing and Usage
 1. Make the script executable:
